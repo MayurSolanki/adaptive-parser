@@ -13,7 +13,7 @@ export class AppService {
     return 'Hello World!';
   }
   async parseM3U8(url: string): Promise<any> {
-    const response = { maniUrl: '', entries: [], error: '' };
+    const response = { baseUrl: '', entries: [], error: '' };
 
     try {
       const playlistContent = await axios.get(url);
@@ -23,7 +23,7 @@ export class AppService {
       const playlist = parser.manifest;
       console.log('Parsed M3U8 playlist:', JSON.stringify(playlist, null, 2));
 
-      response.maniUrl = url;
+      response.baseUrl = url;
       for (const uri of playlist.playlists) {
         // console.log('segment', segment);
 
