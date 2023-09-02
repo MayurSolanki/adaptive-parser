@@ -57,8 +57,8 @@ export class AppService {
 
 
     // // Extract video tracks and their URLs
-    const videoTracks = parser.getVideoTracks();
-    console.log(videoTracks);
+    // const videoTracks = parser.getVideoTracks();
+    // console.log(videoTracks);
     // const resolutionLinks = videoTracks.map((track) => ({
     //   resolution: `${track.height}p`,
     //   videoURL: track.url,
