@@ -12,6 +12,52 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {
     //
+    // this.appService
+    //   .parseM3U8_('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8')
+    //   .then((videoFiles) => {
+    //     console.log(JSON.stringify(videoFiles, null, 2));
+    //   })
+    //   .catch((error) => {
+    //     console.error('Error:', error);
+    //   });
+
+    // this.appService
+    //   .parseMPD("https://dash.akamaized.net/dash264/TestCases/1a/sony/SNE_DASH_SD_CASE1A_REVISED.mpd")
+    //   .then((videoRepresentations) => {
+    //     console.log(JSON.stringify(videoRepresentations, null, 2));
+    //   })
+    //   .catch((error) => {
+    //     console.error('Error:', error);
+    //   });
+
+
+    // this.appService
+    //   .getResolutionManifestURLs(
+    //    // 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
+    //      'https://dash.akamaized.net/dash264/TestCases/1a/sony/SNE_DASH_SD_CASE1A_REVISED.mpd',
+    //   )
+    //   .then((resolutionManifestURLs) => {
+    //     //
+    //     // console.log(JSON.stringify(resolutionManifestURLs, null, 2));
+    //   })
+    //   .catch((error) => {
+    //     console.error('Error:', error);
+    //   });
+
+    // this.appService
+    //   .parseChildManifest(
+    //     'https://dash.akamaized.net/dash264/TestCases/1a/sony/DASH_vodvideo_Track2.m4v',
+    //     'https://dash.akamaized.net/dash264/TestCases/1a/sony/SNE_DASH_SD_CASE1A_REVISED.mpd',
+    //   )
+    //   .then((resolutionManifestURLs) => {
+    //     console.log(
+    //       'resolutionManifestURLs : => ',
+    //       JSON.stringify(resolutionManifestURLs, null, 2),
+    //     );
+    //   })
+    //   .catch((error) => {
+    //     console.error('Error:', error);
+    //   });
   }
 
   @Get()
