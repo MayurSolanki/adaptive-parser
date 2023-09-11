@@ -1,91 +1,107 @@
 import { Injectable } from '@nestjs/common';
-import { Parser as M3U8Parser } from 'm3u8-parser'; // Import the correct class
+import { Parser as M3U8Parser } from 'm3u8-parser'; //Import the correct class
 import axios from 'axios';
 import { DashMPD } from '@liveinstantly/dash-mpd-parser';
 import { parseString } from 'xml2js';
 import urljoin from 'url-join';
 
 // import { DashParser } from 'dash-parser'; // Import the MPEG-DASH parser
-
 // import xml2js from 'xml2js';
 
 @Injectable()
 export class AppService {
+  async parseMPD(mpdURL: string) {
+    try {
+      const response = await axios.get(mpdURL);
+      const manifestXML = response.data;
 
-  // async parseMPD(mpdURL: string) {
-  //   try {
-  //     const response = await axios.get(mpdURL);
-  //     const manifestXML = response.data;
+      // Parse the MPEG-DASH manifest
+      const mpd = new DashMPD();
+      mpd.parse(manifestXML);
 
-  //     // Parse the MPEG-DASH manifest
-  //     const mpd = new DashMPD();
-  //     mpd.parse(manifestXML);
+      const mpdJson = mpd.getJSON();
+      // Operate MPD manifest JSON object (mpd.mpd) for your manifest manipulation
+      mpd.setJSON(mpdJson); //
 
-  //     const mpdJson = mpd.getJSON();
-  //     // Operate MPD manifest JSON object (mpd.mpd) for your manifest manipulation
-  //     mpd.setJSON(mpdJson); //
+      // eslint-disable-next-line prettier/prettier
+      console.log("mpdJson :=> ", JSON.stringify(mpdJson));
 
-  //     // eslint-disable-next-line prettier/prettier
-  //     console.log("mpdJson :=> ", JSON.stringify(mpdJson));
+      // Extract video representations from the parsed manifest
+      const adaptations = mpdJson?.['MPD'].Period[0].AdaptationSet;
 
-  //     // Extract video representations from the parsed manifest
-  //     const adaptations = mpdJson?.['MPD'].Period[0].AdaptationSet;
-  //     const videoRepresentations = adaptations
-  //       .filter((adaptation) => adaptation.$.mimeType.startsWith('video/'))
-  //       .map((adaptation) => ({
-  //         mimeType: adaptation.$.mimeType,
-  //         representations: adaptation.Representation.map((representation) => ({
-  //           id: representation.$.id,
-  //           width: representation.$.width,
-  //           height: representation.$.height,
-  //           frameRate: representation.$.frameRate,
-  //           bandwidth: representation.$.bandwidth,
-  //           codecs: representation.$.codecs,
-  //           baseURL: representation.BaseURL[0],
-  //         })),
-  //       }));
+      //   const videoData = [];
+      //   for (const data of adaptations) {
+      //     if (data['@mimeType']?.startsWith('video/')) {
+      //       console.log('data', data);
+      //       videoData.push(data['@id']);
+      //       videoData.push(data['@width']);
+      //       videoData.push(data['@height']);
+      //     }
+      //   }
+      //   return videoData;
+      // } catch (error) {
+      //   console.error('Error:', error);
+      //   return [];
+      // }
 
-  //     // Return video representation information as JSON
-  //     return videoRepresentations;
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     return [];
-  //   }
-  // }
-  // async parseM3U8_(m3u8URL: string) {
-  //   try {
-  //     // Fetch the M3U8 manifest
-  //     const response = await axios.get(m3u8URL);
-  //     const manifestText = response.data;
 
-  //     // Parse the M3U8 manifest and extract video TS file links
-  //     const videoFiles = {};
+      const videoRepresentations = adaptations
+        .filter((adaptation) => adaptation['@mimeType'].startsWith('video/'))
+        .map((adaptation) => ({
+          mimeType: adaptation['@mimeType'],
+          representations: adaptation.Representation.map((representation) => ({
+            id: representation['@id'],
+            width: representation['@width'],
+            height: representation['@height'],
+            frameRate: representation['@frameRate'],
+            bandwidth: representation['@bandwidth'],
+            codecs: representation['@codecs'],
+            baseURL: representation.BaseURL[0],
+          })),
+        }));
 
-  //     // Split the manifest into lines
-  //     const lines = manifestText.split('\n');
+      // Return video representation information as JSON
+      return videoRepresentations;
+    } catch (error) {
+      console.error('Error:', error);
+      return [];
+    }
+  }
 
-  //     let currentResolution = '';
-  //     for (const line of lines) {
-  //       if (line.startsWith('#EXT-X-STREAM-INF')) {
-  //         // Extract the resolution from the stream info line
-  //         const resolutionMatch = line.match(/RESOLUTION=(\d+x\d+)/);
-  //         if (resolutionMatch) {
-  //           currentResolution = resolutionMatch[1];
-  //           videoFiles[currentResolution] = [];
-  //         }
-  //       } else if (line.trim() && !line.startsWith('#')) {
-  //         // If not a comment or empty line, add the video TS file link
-  //         videoFiles[currentResolution].push(line);
-  //       }
-  //     }
+  async parseM3U8_(m3u8URL: string) {
+    try {
+      // Fetch the M3U8 manifest
+      const response = await axios.get(m3u8URL);
+      const manifestText = response.data;
 
-  //     // Return the video TS file links as a JSON object
-  //     return videoFiles;
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     return {};
-  //   }
-  // }
+      // Parse the M3U8 manifest and extract video TS file links
+      const videoFiles = {};
+
+      // Split the manifest into lines
+      const lines = manifestText.split('\n');
+
+      let currentResolution = '';
+      for (const line of lines) {
+        if (line.startsWith('#EXT-X-STREAM-INF')) {
+          // Extract the resolution from the stream info line
+          const resolutionMatch = line.match(/RESOLUTION=(\d+x\d+)/);
+          if (resolutionMatch) {
+            currentResolution = resolutionMatch[1];
+            videoFiles[currentResolution] = [];
+          }
+        } else if (line.trim() && !line.startsWith('#')) {
+          // If not a comment or empty line, add the video TS file link
+          videoFiles[currentResolution].push(line);
+        }
+      }
+
+      // Return the video TS file links as a JSON object
+      return videoFiles;
+    } catch (error) {
+      console.error('Error:', error);
+      return {};
+    }
+  }
 
   // async getResolutionManifestURLs(rootManifestURL: string) {
   //   try {
@@ -177,10 +193,10 @@ export class AppService {
   //   }
   // }
 
-
   getHello(): string {
     return 'Hello World!';
   }
+
   async parseM3U8(url: string): Promise<any> {
     const response = { baseUrl: '', entries: [], error: '' };
 
