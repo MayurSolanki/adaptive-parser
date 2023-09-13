@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Parser as M3U8Parser } from 'm3u8-parser'; //Import the correct class
 import axios from 'axios';
 import { DashMPD } from '@liveinstantly/dash-mpd-parser';
-import { parseString } from 'xml2js';
-import urljoin from 'url-join';
+import xml2js from 'xml2js';
 
 // import { DashParser } from 'dash-parser'; // Import the MPEG-DASH parser
 // import xml2js from 'xml2js';
@@ -43,7 +42,6 @@ export class AppService {
       //   console.error('Error:', error);
       //   return [];
       // }
-
 
       const videoRepresentations = adaptations
         .filter((adaptation) => adaptation['@mimeType'].startsWith('video/'))
@@ -209,10 +207,18 @@ export class AppService {
       console.log('Parsed M3U8 playlist:', JSON.stringify(playlist, null, 2));
 
       response.baseUrl = url;
-      for (const uri of playlist.playlists) {
-        // console.log('segment', segment);
 
-        response.entries.push({ url: uri });
+      if (playlist.playlists) {
+        for (const uri of playlist.playlists) {
+          response.entries.push({ url: uri });
+        }
+      }
+      if (playlist && playlist.segments) {
+        const tsFiles = playlist.segments.map((segment) => segment.uri);
+        tsFiles.forEach((tsFile) => {
+          console.log(tsFile);
+          response.entries.push({ tsFiles: tsFile });
+        });
       }
     } catch (error) {
       console.log('error : => ', error);
@@ -234,11 +240,11 @@ export class AppService {
 
     const mpdJson = mpd.getJSON();
     // Operate MPD manifest JSON object (mpd.mpd) for your manifest manipulation
-    mpd.setJSON(mpdJson);
+    // mpd.setJSON(mpdJson);
 
     // Get XML DASH MPD manifest after operation
-    const mpdXml = mpd.getMPD();
-    console.log(mpdXml);
+    // const mpdXml = mpd.getMPD();
+    // console.log(mpdXml);
 
     // // Extract video tracks and their URLs
     // const videoTracks = parser.getVideoTracks();
@@ -247,6 +253,25 @@ export class AppService {
     //   resolution: `${track.height}p`,
     //   videoURL: track.url,
     // }));
+
+    // =============================
+    // const mpdContent = response.data;
+
+    // xml2js.parseString(mpdContent, (err, result) => {
+    //   if (err) {
+    //     console.error('Failed to parse MPD:', err);
+    //   } else {
+    //     const baseUrls = result.MPD.Period[0].BaseURL;
+
+    //     if (baseUrls) {
+    //       baseUrls.forEach((baseUrl) => {
+    //         console.log("baseUrl : ", baseUrl);
+    //       });
+    //     } else {
+    //       console.log('No BaseURLs found in the MPD.');
+    //     }
+    //   }
+    // });
 
     return mpdJson;
     // let videoLinks;

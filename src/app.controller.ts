@@ -72,7 +72,7 @@ export class AppController {
     if (!url.endsWith('.m3u8')) {
       throw new HttpException('invalid url type', HttpStatus.BAD_REQUEST);
     }
-    return await this.appService.parseM3U8_(url);    //parseM3U8(url);
+    return await this.appService.parseM3U8(url);   //
   }
 
   @Post('parse/mpd')
@@ -82,6 +82,6 @@ export class AppController {
     if (!url.endsWith('.mpd')) {
       throw new HttpException('invalid url type', HttpStatus.BAD_REQUEST);
     }
-    return await this.appService.parseMPD(url)   // parseMpegDash(url);
+    return await this.appService.parseMpegDash(url);   // 
   }
 }
