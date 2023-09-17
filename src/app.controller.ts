@@ -7,10 +7,14 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { AppService } from './app.service';
+import { SegmentService } from './segment.service';
 
 @Controller('playlist')
 export class AppController {
-  constructor(private readonly appService: AppService) {
+  constructor(
+    private readonly appService: AppService,
+    private readonly segmentService: SegmentService,
+  ) {
     //
     // this.appService
     //   .parseM3U8_('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8')
@@ -20,7 +24,6 @@ export class AppController {
     //   .catch((error) => {
     //     console.error('Error:', error);
     //   });
-
     // this.appService
     //   .parseMPD("https://dash.akamaized.net/dash264/TestCases/1a/sony/SNE_DASH_SD_CASE1A_REVISED.mpd")
     //   .then((videoRepresentations) => {
@@ -29,8 +32,6 @@ export class AppController {
     //   .catch((error) => {
     //     console.error('Error:', error);
     //   });
-
-
     // this.appService
     //   .getResolutionManifestURLs(
     //    // 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
@@ -43,7 +44,6 @@ export class AppController {
     //   .catch((error) => {
     //     console.error('Error:', error);
     //   });
-
     // this.appService
     //   .parseChildManifest(
     //     'https://dash.akamaized.net/dash264/TestCases/1a/sony/DASH_vodvideo_Track2.m4v',
@@ -72,7 +72,7 @@ export class AppController {
     if (!url.endsWith('.m3u8')) {
       throw new HttpException('invalid url type', HttpStatus.BAD_REQUEST);
     }
-    return await this.appService.parseM3U8(url);   //
+    return await this.appService.parseM3U8(url); //
   }
 
   @Post('parse/mpd')
@@ -82,6 +82,22 @@ export class AppController {
     if (!url.endsWith('.mpd')) {
       throw new HttpException('invalid url type', HttpStatus.BAD_REQUEST);
     }
-    return await this.appService.parseMpegDash(url);   // 
+    return await this.appService.parseMpegDash(url); //
+  }
+
+  @Post('parse/both')
+  async parseBoth(
+    @Body() body: { m3u8Url: string; mpdUrl: string },
+  ): Promise<any> {
+    const m3u8Url = body.m3u8Url;
+    const mpdUrl = body.mpdUrl;
+
+    console.log('m3u8Url', m3u8Url);
+    console.log('mpdUrl', mpdUrl);
+
+    if (!mpdUrl.endsWith('.mpd') || !m3u8Url.endsWith('.m3u8')) {
+      throw new HttpException('invalid url type', HttpStatus.BAD_REQUEST);
+    }
+    return await this.segmentService.consolidateSegments(m3u8Url, mpdUrl); //comment
   }
 }
