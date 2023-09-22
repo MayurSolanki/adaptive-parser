@@ -85,19 +85,39 @@ export class AppController {
     return await this.appService.parseMpegDash(url); //
   }
 
-  @Post('parse/both')
-  async parseBoth(
-    @Body() body: { m3u8Url: string; mpdUrl: string },
-  ): Promise<any> {
-    const m3u8Url = body.m3u8Url;
-    const mpdUrl = body.mpdUrl;
-
-    console.log('m3u8Url', m3u8Url);
-    console.log('mpdUrl', mpdUrl);
-
-    if (!mpdUrl.endsWith('.mpd') || !m3u8Url.endsWith('.m3u8')) {
+  @Post('segment/m3u8')
+  async segmentM3U8(@Body() body: { url: string }): Promise<any> {
+    const url = body.url;
+    console.log('url', url);
+    if (!url.endsWith('.m3u8')) {
       throw new HttpException('invalid url type', HttpStatus.BAD_REQUEST);
     }
-    return await this.segmentService.consolidateSegments(m3u8Url, mpdUrl); //comment
+    return await this.segmentService.m3u8ToJson(url);
   }
+
+  @Post('segment/mpd')
+  async segmentMpd(@Body() body: { url: string }): Promise<any> {
+    const url = body.url;
+    console.log('url', url);
+    if (!url.endsWith('.mpd')) {
+      throw new HttpException('invalid url type', HttpStatus.BAD_REQUEST);
+    }
+    return await this.segmentService.mpdToJson(url);
+  }
+
+  // @Post('parse/both')
+  // async parseBoth(
+  //   @Body() body: { m3u8Url: string; mpdUrl: string },
+  // ): Promise<any> {
+  //   const m3u8Url = body.m3u8Url;
+  //   const mpdUrl = body.mpdUrl;
+
+  //   console.log('m3u8Url', m3u8Url);
+  //   console.log('mpdUrl', mpdUrl);
+
+  //   if (!mpdUrl.endsWith('.mpd') || !m3u8Url.endsWith('.m3u8')) {
+  //     throw new HttpException('invalid url type', HttpStatus.BAD_REQUEST);
+  //   }
+  //   return await this.segmentService.consolidateSegments(m3u8Url, mpdUrl); //comment
+  // }
 }
